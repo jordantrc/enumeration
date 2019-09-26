@@ -39,7 +39,7 @@ def keyword_search(filename, fs_list):
             if k in f.lower():
                 extension = '(none)'
                 if "." in f:
-                    extension = f.split['.'][-1].lower()
+                    extension = f.split('.')[-1].lower()
                 matching_files.append([filename, i, f, extension])
                 break
 
