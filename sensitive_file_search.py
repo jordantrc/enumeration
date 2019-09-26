@@ -50,10 +50,10 @@ def main():
     """Main function."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("files", nargs=argparse.REMAINDER, help="Files containing filesystem listings.")
-    parser.parse_args()
+    parser.add_argument("files", nargs="*", help="Files containing filesystem listings.")
+    args = parser.parse_args()
 
-    files = parser.files
+    files = args.files
     filesystem_list = []
     matching_files = []
 
@@ -63,7 +63,9 @@ def main():
         filesystem_list = sys.stdin.readlines()
         matching_files = keyword_search('stdin', filesystem_list)
     else:
+        print("Searching the following files:")
         for f in files:
+            print(f)
             if os.path.isfile(f):
                 with open(f, 'r') as fd:
                     filesystem_list = fd.readlines()
@@ -80,7 +82,7 @@ def main():
         else:
             extension_dictionary[extension] = [f]
 
-    print("POTENTIAL SENSITIVE FILES OR FOLDERS:")
+    print("\n\nPOTENTIAL SENSITIVE FILES OR FOLDERS:")
     for k in sorted(extension_dictionary.keys()):
         print("File extension: %s" % k)
         print("Source file\t\tLine number\t\tFile name")
