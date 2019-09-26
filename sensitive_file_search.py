@@ -73,22 +73,11 @@ def main():
             else:
                 print("Invalid file %s" % f)
 
-    # generate the extension dictionary
-    extension_dictionary = {}
-    for f in matching_files:
-        filename, line, file, extension = f
-        if extension in extension_dictionary.keys():
-            extension_dictionary[extension].append(f)
-        else:
-            extension_dictionary[extension] = [f]
-
+    # print the results
     print("\n\nPOTENTIAL SENSITIVE FILES OR FOLDERS:")
-    for k in sorted(extension_dictionary.keys()):
-        print("File extension: %s" % k)
-        print("Source file\t\tLine number\t\tFile name")
-        for f in extension_dictionary[k]:
-            print("%s\t\t%s\t\t%s" % (f[0], f[1], f[2]))
-        print("\n\n\n")
+    print("Source file\t\tLine number\t\tFile name")
+    for f in matching_files:
+        print("%s\t\t%s\t\t%s" % (f[0], f[1], f[2]))
 
 
 if __name__ == "__main__":
