@@ -87,7 +87,7 @@ def main():
         print("File extension: %s" % k)
         print("Source file\t\tLine number\t\tFile name")
         for f in extension_dictionary[k]:
-            print("%s\t\t%s\t\t%s" % (f[0:3]))
+            print("%s\t\t%s\t\t%s" % (f[0], f[1], f[2]))
         print("\n\n\n")
 
 
