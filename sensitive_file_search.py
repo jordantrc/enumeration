@@ -50,7 +50,7 @@ def main():
     """Main function."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("files", nargs="?", default=[], help="Files containing filesystem listings.")
+    parser.add_argument("files", nargs="*", default=[], help="Files containing filesystem listings.")
     parser.parse_args()
 
     files = parser.files
