@@ -2,6 +2,9 @@
 # Azure AD enumeration
 # Taken from: https://hunter2.gitbook.io/darthsidious/enumeration/azure-enumeration
 #
+# Utilizes the azuread powershell module and the azure
+# CLI:
+# https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?view=azure-cli-latest
 ###
 
 #Connect to Azure AD using Powershell
