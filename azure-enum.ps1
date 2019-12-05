@@ -22,6 +22,7 @@ Get-AzureADGroup
 Get-AzureADGroup -Filter "DisplayName eq 'Intune Administrators'"
 
 # Get Azure AD policy
+# the cmdlet below is no longer in AzureAD (version 2.0.2.61)
 Get-AzureADPolicy
 
 # Get Azure AD roles with some examples
@@ -62,7 +63,11 @@ ForEach($role in $roles) {
 $roleUsers
 
 ### Enumeration using Microburst
-https://github.com/NetSPI/MicroBurst
+# https://github.com/NetSPI/MicroBurst
+
+# prerequisites
+Install-Module AzureRM
+Install-Module Azure
 
 Import-Module .\MicroBurst.psm1
 
@@ -71,5 +76,5 @@ Invoke-EnumerateAzureBlobs -Base company
 Invoke-EnumerateAzureSubDomains -base company -verbose
 
 #Authencticated enumeration
-Get-AzureDomainInfo -folder MicroBurst -VerboseGet-MSOLDomainInfo
+Get-AzureDomainInfo -folder MicroBurst -Verbose
 Get-MSOLDomainInfo
