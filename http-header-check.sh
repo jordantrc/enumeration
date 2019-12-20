@@ -16,6 +16,7 @@ usage() {
 	echo "	-n				remove colorized output"
 	echo "	-d				debug output, print the whole HTTP protocol response" 
 	echo "					without the content"
+	echo "	-t <seconds>	set the timeout for curl, default is 5 seconds"
 	exit 1
 }
 
@@ -28,8 +29,9 @@ fi
 SHORT_OUTPUT=false
 NO_COLOR=false
 DEBUG=false
-HEADER='ALL'
-while getopts "ds:nb" o; do
+TIMEOUT="5"
+HEADER="ALL"
+while getopts "ds:nbt:" o; do
     case "${o}" in
         b)
             SHORT_OUTPUT=true
@@ -42,6 +44,9 @@ while getopts "ds:nb" o; do
             ;;
 		d)
 			DEBUG=true
+			;;
+		t)
+			TIMEOUT=${OPTARG}
 			;;
         *)
             usage
@@ -71,7 +76,7 @@ NEU="${YELLOW}[*]${NC}"
 CURL="/usr/bin/curl"
 
 echo -e "$NEU Connecting to $1"
-RESPONSE=$($CURL -k -I $1 2>/dev/null)
+RESPONSE=$($CURL --connect-timeout $TIMEOUT -k -I $1 2>/dev/null)
 
 if $DEBUG; then
 	echo "DEBUG HTTP RESPONSE:"
