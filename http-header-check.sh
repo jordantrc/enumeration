@@ -71,7 +71,7 @@ NEU="${YELLOW}[*]${NC}"
 CURL="/usr/bin/curl"
 
 echo -e "$NEU Connecting to $1"
-RESPONSE=$($CURL -I $1 2>/dev/null)
+RESPONSE=$($CURL -k -I $1 2>/dev/null)
 
 if $DEBUG; then
 	echo "DEBUG HTTP RESPONSE:"
@@ -79,7 +79,7 @@ if $DEBUG; then
 fi
 
 # get the HTTP status code
-HTTP_STATUS_CODE=$(echo "$RESPONSE" | grep "HTTP/" | cut -d " " -f 2,3)
+HTTP_STATUS_CODE=$(echo "$RESPONSE" | grep "HTTP/" | cut -d " " -f 2-)
 echo -e "$NEU HTTP Status Code: $HTTP_STATUS_CODE"
 
 #echo -e "$NEU Checking the response for the HTTP Security Headers"
