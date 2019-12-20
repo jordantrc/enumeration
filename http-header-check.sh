@@ -14,6 +14,8 @@ usage() {
 	echo "	-b 				brief output, prints a result per-line"
 	echo "	-s <header>		check for a single header"
 	echo "	-n				remove colorized output"
+	echo "	-d				debug output, print the whole HTTP protocol response" 
+	echo "					without the content"
 	exit 1
 }
 
@@ -25,8 +27,9 @@ if [ "$#" -lt 1 ]; then
 fi
 SHORT_OUTPUT=false
 NO_COLOR=false
+DEBUG=false
 HEADER='ALL'
-while getopts "snh:" o; do
+while getopts "ds:nb" o; do
     case "${o}" in
         b)
             SHORT_OUTPUT=true
@@ -37,6 +40,9 @@ while getopts "snh:" o; do
         s)
             HEADER=${OPTARG}
             ;;
+		d)
+			DEBUG=true
+			;;
         *)
             usage
             ;;
@@ -65,22 +71,27 @@ NEU="${YELLOW}[*]${NC}"
 CURL="/usr/bin/curl"
 
 echo -e "$NEU Connecting to $1"
-RESULT=$($CURL -v -k --silent $1 2>&1 1>/dev/null)
+RESPONSE=$($CURL -I $1 2>/dev/null)
+
+if $DEBUG; then
+	echo "DEBUG HTTP RESPONSE:"
+	echo "$RESPONSE"
+fi
 
 # get the HTTP status code
-HTTP_STATUS_CODE=$(echo "$RESULT" | grep "< HTTP/" | cut -d " " -f 3,4)
+HTTP_STATUS_CODE=$(echo "$RESPONSE" | grep "HTTP/" | cut -d " " -f 2,3)
 echo -e "$NEU HTTP Status Code: $HTTP_STATUS_CODE"
 
 #echo -e "$NEU Checking the response for the HTTP Security Headers"
 # check for the headers
-STS=$(echo $RESULT | grep -i 'strict-transport-security')
-CSP=$(echo $RESULT | grep -i 'content-security-policy')
-XSS=$(echo $RESULT | grep -i 'x-xss-protection')
-XFR=$(echo $RESULT | grep -i 'x-frame-options')
-XCO=$(echo $RESULT | grep -i 'x-content-type-options')
+STS=$(echo $RESPONSE | grep -i 'strict-transport-security')
+CSP=$(echo $RESPONSE | grep -i 'content-security-policy')
+XSS=$(echo $RESPONSE | grep -i 'x-xss-protection')
+XFR=$(echo $RESPONSE | grep -i 'x-frame-options')
+XCO=$(echo $RESPONSE | grep -i 'x-content-type-options')
 
 # print output
-echo -e "$NEU RESULTS:"
+echo -e "$NEU HTTP HEADER STATUS:"
 
 if [ ${#CSP} -gt 0 ]; then
 	echo -e "$POS Content-Security-Policy header found"
