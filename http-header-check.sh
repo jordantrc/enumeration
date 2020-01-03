@@ -9,12 +9,12 @@
 #	-n				remove colorized output
 
 usage() {
-	echo "Usage: http-header-check.sh [OPTIONS] [https:]host[:port][\url]"
+	echo "Usage: http-header-check.sh [OPTIONS] [https:]host[:port][/url]"
 	echo "Valid Options:"
 	echo "	-b 				brief output, prints a result per-line"
 	echo "	-s <header>		check for a single header"
 	echo "	-n				remove colorized output"
-	echo "	-d				debug output, print the whole HTTP protocol response" 
+	echo "	-v				verbose output, print the whole HTTP protocol response" 
 	echo "					without the content"
 	echo "	-t <seconds>	set the timeout for curl, default is 5 seconds"
 	exit 1
@@ -28,10 +28,10 @@ if [ "$#" -lt 1 ]; then
 fi
 SHORT_OUTPUT=false
 NO_COLOR=false
-DEBUG=false
+VERBOSE=false
 TIMEOUT="5"
 HEADER="ALL"
-while getopts "ds:nbt:" o; do
+while getopts "vs:nbt:" o; do
     case "${o}" in
         b)
             SHORT_OUTPUT=true
@@ -42,8 +42,8 @@ while getopts "ds:nbt:" o; do
         s)
             HEADER=${OPTARG}
             ;;
-		d)
-			DEBUG=true
+		v)
+			VERBOSE=true
 			;;
 		t)
 			TIMEOUT=${OPTARG}
