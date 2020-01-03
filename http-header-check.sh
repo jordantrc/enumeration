@@ -20,66 +20,82 @@ usage() {
 	exit 1
 }
 
-# print_output function
-# requires response to be passed as the only argument
+#######################################
+# print detailed output
+# Globals:
+#	csp, sts, xco, xfr, xss
+#	http_status_code
+#   response
+#	url
+# Arguments:
+#   None
+# Returns:
+#   None
+#######################################
 print_output() {
-	RESPONSE=$1
-	STS=$(echo $RESPONSE | grep -i 'strict-transport-security')
-	CSP=$(echo $RESPONSE | grep -i 'content-security-policy')
-	XSS=$(echo $RESPONSE | grep -i 'x-xss-protection')
-	XFR=$(echo $RESPONSE | grep -i 'x-frame-options')
-	XCO=$(echo $RESPONSE | grep -i 'x-content-type-options')
-
-	echo -e "$NEU HTTP HEADER STATUS:"
-
-	if [ ${#CSP} -gt 0 ]; then
-		echo -e "$POS Content-Security-Policy header found"
-	else
-		echo -e "$NEG Content-Security-Policy header missing"
+	echo "#################################################"
+	echo -e "$neu URL: $url"
+	echo -e "$neu HTTP Status Code: $http_status_code"
+	
+	if $verbose; then
+		echo "HTTP Response Headers:"
+		echo "$response" | sed 's/^M$//'
 	fi
 
-	if [ ${#STS} -gt 0 ]; then
-		echo -e "$POS Strict-Transport-Security header found"
+	echo -e "$neu HTTP Header Status:"
+	if [ ${#csp} -gt 0 ]; then
+		echo -e "$pos Content-Security-Policy header found"
 	else
-		echo -e "$NEG Strict-Transport-Security header missing"
+		echo -e "$neg Content-Security-Policy header missing"
 	fi
 
-	if [ ${#XCO} -gt 0 ]; then
-		echo -e "$POS X-Content-Type-Options header found"
+	if [ ${#sts} -gt 0 ]; then
+		echo -e "$pos Strict-Transport-Security header found"
 	else
-		echo -e "$NEG X-Content-Type-Options header missing"
+		echo -e "$neg Strict-Transport-Security header missing"
 	fi
 
-	if [ ${#XFR} -gt 0 ]; then
-		echo -e "$POS X-Frame-Options header found"
+	if [ ${#xco} -gt 0 ]; then
+		echo -e "$pos X-Content-Type-Options header found"
 	else
-		echo -e "$NEG X-Frame-Options header missing"
+		echo -e "$neg X-Content-Type-Options header missing"
 	fi
 
-	if [ ${#XSS} -gt 0 ]; then
-		echo -e "$POS X-XSS-Protection header found"
+	if [ ${#xfr} -gt 0 ]; then
+		echo -e "$pos X-Frame-Options header found"
 	else
-		echo -e "$NEG X-XSS-Protection header missing"
+		echo -e "$neg X-Frame-Options header missing"
 	fi
+
+	if [ ${#xss} -gt 0 ]; then
+		echo -e "$pos X-XSS-Protection header found"
+	else
+		echo -e "$neg X-XSS-Protection header missing"
+	fi
+
+	echo "#################################################"
 }
 
-# print_output_brief function
-# requires response to be passed as the only argument
+#######################################
+# print brief output
+# Globals:
+#	csp, sts, xco, xfr, xss
+#	http_status_code
+#   response
+#	url
+# Arguments:
+#   None
+# Returns:
+#   None
+#######################################
 print_output_brief() {
-	RESPONSE=$1
-	STS=$(echo $RESPONSE | grep -i 'strict-transport-security')
-	CSP=$(echo $RESPONSE | grep -i 'content-security-policy')
-	XSS=$(echo $RESPONSE | grep -i 'x-xss-protection')
-	XFR=$(echo $RESPONSE | grep -i 'x-frame-options')
-	XCO=$(echo $RESPONSE | grep -i 'x-content-type-options')
+	if [ ${#csp} -gt 0 ]; then csp_bool=true; else csp_bool=false; fi
+	if [ ${#sts} -gt 0 ]; then sts_bool=true; else sts_bool=false; fi
+	if [ ${#xco} -gt 0 ]; then xco_bool=true; else xco_bool=false; fi
+	if [ ${#xfr} -gt 0 ]; then xfr_bool=true; else xfr_bool=false; fi
+	if [ ${#xss} -gt 0 ]; then xss_bool=true; else xss_bool=false; fi
 
-	if [ ${#CSP} -gt 0 ]; then CSP_BOOL=true; else CSP_BOOL=false; fi
-	if [ ${#STS} -gt 0 ]; then STS_BOOL=true; else STS_BOOL=false; fi
-	if [ ${#XCO} -gt 0 ]; then XCO_BOOL=true; else XCO_BOOL=false; fi
-	if [ ${#XFR} -gt 0 ]; then XFR_BOOL=true; else XFR_BOOL=false; fi
-	if [ ${#XSS} -gt 0 ]; then XSS_BOOL=true; else XSS_BOOL=false; fi
-
-	echo "CSP: $CSP_BOOL, STS: $STS_BOOL, XCO: $XCO_BOOL, XFR: $XFR_BOOL, XSS: $XSS_BOOL"
+	printf "%s\n" "$url $http_status_code CSP:$csp_bool STS:$sts_bool XCO:$xco_bool XFR:$xfr_bool XSS:$xss_bool"
 }
 
 # get options
@@ -88,27 +104,28 @@ if [ "$#" -lt 1 ]; then
     usage
     exit 1
 fi
-BRIEF_OUTPUT=false
-NO_COLOR=false
-VERBOSE=false
-TIMEOUT="5"
-HEADER="ALL"
+
+brief_output=false
+no_color=false
+verbose=false
+timeout="5"
+header="ALL"
 while getopts "vs:nbt:" o; do
     case "${o}" in
         b)
-            BRIEF_OUTPUT=true
+            brief_output=true
             ;;
 		n)
-			NO_COLOR=true
+			no_color=true
 			;;
         s)
-            HEADER=${OPTARG}
+            header=${OPTARG}
             ;;
 		v)
-			VERBOSE=true
+			verbose=true
 			;;
 		t)
-			TIMEOUT=${OPTARG}
+			timeout=${OPTARG}
 			;;
         *)
             usage
@@ -117,45 +134,44 @@ while getopts "vs:nbt:" o; do
 done
 shift $((OPTIND-1))
 
-# fancy schmancy colorized output stuff
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+url="$1"
 
-if $NO_COLOR; then
-	RED=""
-	GREEN=""
-	YELLOW=""
-	NC=""
+# fancy schmancy colorized output stuff
+red='\033[0;31m'
+nc='\033[0m' # No Color
+green='\033[0;32m'
+yellow='\033[1;33m'
+
+if $no_color; then
+	red=""
+	green=""
+	yellow=""
+	nc=""
 fi
 
 # sigils to be used in output
-POS="${GREEN}[+]${NC}"
-NEG="${RED}[-]${NC}"
-NEU="${YELLOW}[*]${NC}"
+pos="${green}[+]${nc}"
+neg="${red}[-]${nc}"
+neu="${yellow}[*]${nc}"
 
-CURL="/usr/bin/curl"
-
-echo -e "#############################################"
-echo -e "$NEU Connecting to $1"
-RESPONSE=$($CURL --connect-timeout $TIMEOUT -k -I $1 2>/dev/null)
-
-if $VERBOSE; then
-	echo "HTTP RESPONSE:"
-	echo "$RESPONSE" | sed 's/^M$//'
-fi
+curl="/usr/bin/curl"
+response=$($curl --connect-timeout $timeout -k -I $url 2>/dev/null)
 
 # get the HTTP status code
-HTTP_STATUS_CODE=$(echo "$RESPONSE" | grep "HTTP/" | cut -d " " -f 2-)
-echo -e "$NEU HTTP Status Code: $HTTP_STATUS_CODE"
+http_status_code=$(echo "$response" | grep "HTTP/" | cut -d " " -f 2)
+
+# check for the HTTP security headers
+sts=$(echo $response | grep -i 'strict-transport-security')
+csp=$(echo $response | grep -i 'content-security-policy')
+xss=$(echo $response | grep -i 'x-xss-protection')
+xfr=$(echo $response | grep -i 'x-frame-options')
+xco=$(echo $response | grep -i 'x-content-type-options')
 
 # print output
-if $BRIEF_OUTPUT; then
-	print_output_brief $RESPONSE
+if $brief_output; then
+	print_output_brief
 else
-	print_output $RESPONSE
-
-echo -e "#############################################"
+	print_output
+fi
 
 exit 0
