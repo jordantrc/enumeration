@@ -20,6 +20,8 @@ usage() {
     echo "  -v              verbose output, print the whole HTTP protocol response" 
     echo "                  without the content"
     echo "  -c              certificate file for client authentication"
+    echo "  -p              [optional] password for the certificate file, if none is provided and the"
+    echo "                  cert requires it, a prompt will appear"
     echo "  -t <seconds>    set the timeout for curl, default is 5 seconds"
     exit 1
 }
@@ -115,7 +117,8 @@ verbose=false
 timeout="5"
 header="ALL"
 certificate_file=""
-while getopts "vs:nbt:" o; do
+certificate_password=""
+while getopts "vs:nbt:c:" o; do
     case "${o}" in
         b)
             brief_output=true
@@ -125,6 +128,9 @@ while getopts "vs:nbt:" o; do
             ;;
         n)
             no_color=true
+            ;;
+        p)
+            certificate_password=${OPTARG}
             ;;
         s)
             header=${OPTARG}
