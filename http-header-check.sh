@@ -122,6 +122,7 @@ while getopts "vs:nbt:" o; do
             ;;
         c)
             certificate_file=${OPTARG}
+            ;;
         n)
             no_color=true
             ;;
