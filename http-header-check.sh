@@ -170,7 +170,11 @@ neu="${yellow}[*]${nc}"
 
 # add a --cert option if specified
 if [ ${#certificate_file} -gt 0 ]; then
-    certificate_option="--cert $certificate_file"
+    if [ ${#certificate_password} -gt 0 ]; then
+        certificate_option="--cert $certificate_file:$certificate_password"
+    else
+        certificate_option="--cert $certificate_file"
+    fi
 else
     certificate_option=""
 fi
