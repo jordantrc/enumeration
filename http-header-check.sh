@@ -118,7 +118,7 @@ timeout="5"
 header="ALL"
 certificate_file=""
 certificate_password=""
-while getopts "vs:nbt:c:" o; do
+while getopts "vs:nbt:c:p:" o; do
     case "${o}" in
         b)
             brief_output=true
