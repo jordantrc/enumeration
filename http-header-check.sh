@@ -19,6 +19,7 @@ usage() {
     echo "  -n              remove colorized output"
     echo "  -v              verbose output, print the whole HTTP protocol response" 
     echo "                  without the content"
+    echo "  -c              certificate file for client authentication"
     echo "  -t <seconds>    set the timeout for curl, default is 5 seconds"
     exit 1
 }
@@ -113,11 +114,14 @@ no_color=false
 verbose=false
 timeout="5"
 header="ALL"
+certificate_file=""
 while getopts "vs:nbt:" o; do
     case "${o}" in
         b)
             brief_output=true
             ;;
+        c)
+            certificate_file=${OPTARG}
         n)
             no_color=true
             ;;
@@ -157,8 +161,15 @@ pos="${green}[+]${nc}"
 neg="${red}[-]${nc}"
 neu="${yellow}[*]${nc}"
 
+# add a --cert option if specified
+if [ ${#certificate_file} -gt 0 ]; then
+    certificate_option="--cert $certificate_file"
+else
+    certificate_option=""
+fi
+
 curl="/usr/bin/curl"
-response=$($curl --connect-timeout $timeout -k -I $url 2>/dev/null)
+response=$($curl $certificate_option --connect-timeout $timeout -k -I $url 2>/dev/null)
 http_status_code=$(echo "$response" | grep "HTTP/" | cut -d " " -f 2)
 
 # check for the HTTP security headers
