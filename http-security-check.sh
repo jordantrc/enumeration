@@ -23,6 +23,7 @@ usage() {
     echo "  -p              [optional] password for the certificate file, if none is provided and the"
     echo "                  cert requires it, a prompt will appear"
     echo "  -t <seconds>    set the timeout for curl, default is 5 seconds"
+    echo "  -k              check all cookies for security flags (secure, httponly)"
     exit 1
 }
 
@@ -79,6 +80,11 @@ print_output() {
         echo -e "$neg X-XSS-Protection header missing"
     fi
 
+    if [ ${#insecure_cookies} -gt 0 ]; then
+        echo -e "Insecure Cookies:"
+        echo -e "$insecure_cookies"
+    fi
+
     echo "#################################################"
 }
 
@@ -101,7 +107,9 @@ print_output_brief() {
     if [ ${#xfr} -gt 0 ]; then xfr_bool=true; else xfr_bool=false; fi
     if [ ${#xss} -gt 0 ]; then xss_bool=true; else xss_bool=false; fi
 
-    printf "%s\n" "$url $http_status_code CSP:$csp_bool STS:$sts_bool XCO:$xco_bool XFR:$xfr_bool XSS:$xss_bool"
+    insecure_cookies_brief=$(echo $insecure_cookies | tr '\n' '; ')
+
+    printf "%s\n" "$url $http_status_code CSP:$csp_bool STS:$sts_bool XCO:$xco_bool XFR:$xfr_bool XSS:$xss_bool; $insecure_cookies_brief"
 }
 
 # get options
@@ -114,17 +122,21 @@ fi
 brief_output=false
 no_color=false
 verbose=false
+cookie_check=false
 timeout="5"
 header="ALL"
 certificate_file=""
 certificate_password=""
-while getopts "vs:nbt:c:p:" o; do
+while getopts "vs:nbkt:c:p:" o; do
     case "${o}" in
         b)
             brief_output=true
             ;;
         c)
             certificate_file=${OPTARG}
+            ;;
+        k)
+            cookie_check=true
             ;;
         n)
             no_color=true
@@ -189,6 +201,12 @@ csp=$(echo $response | grep -i 'content-security-policy')
 xss=$(echo $response | grep -i 'x-xss-protection')
 xfr=$(echo $response | grep -i 'x-frame-options')
 xco=$(echo $response | grep -i 'x-content-type-options')
+
+# check for cookie security flags if desired
+insecure_cookies=""
+if $cookie_check; then
+    insecure_cookies=$(echo $response | grep 'Set-Cookie' | grep -Eiv '(; *Secure; *HttpOnly$|; *HttpOnly; *Secure$)')
+fi
 
 # print output
 if $brief_output; then
