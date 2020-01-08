@@ -107,9 +107,18 @@ print_output_brief() {
     if [ ${#xfr} -gt 0 ]; then xfr_bool=true; else xfr_bool=false; fi
     if [ ${#xss} -gt 0 ]; then xss_bool=true; else xss_bool=false; fi
 
-    insecure_cookies_brief=$(echo $insecure_cookies | tr '\n' '; ')
+    insecure_cookies_brief=""
+    if [ ${#insecure_cookies} -gt 0 ]; then
+        insecure_cookies_brief=$(echo "$insecure_cookies" | tr '\n' '; ')
+    fi
 
-    printf "%s\n" "$url $http_status_code CSP:$csp_bool STS:$sts_bool XCO:$xco_bool XFR:$xfr_bool XSS:$xss_bool; $insecure_cookies_brief"
+    output_string="$url $http_status_code CSP:$csp_bool STS:$sts_bool XCO:$xco_bool XFR:$xfr_bool XSS:$xss_bool"
+
+    if [ ${#insecure_cookies_brief} -gt 0 ]; then
+        output_string+=" Insecure Cookies: $insecure_cookies_brief"
+    fi
+
+    printf "%s\n" "$output_string"
 }
 
 # get options
@@ -196,16 +205,18 @@ response=$($curl $certificate_option --connect-timeout $timeout -k -I $url 2>/de
 http_status_code=$(echo "$response" | grep "HTTP/" | cut -d " " -f 2)
 
 # check for the HTTP security headers
-sts=$(echo $response | grep -i 'strict-transport-security')
-csp=$(echo $response | grep -i 'content-security-policy')
-xss=$(echo $response | grep -i 'x-xss-protection')
-xfr=$(echo $response | grep -i 'x-frame-options')
-xco=$(echo $response | grep -i 'x-content-type-options')
+sts=$(echo "$response" | grep -i 'strict-transport-security')
+csp=$(echo "$response" | grep -i 'content-security-policy')
+xss=$(echo "$response" | grep -i 'x-xss-protection')
+xfr=$(echo "$response" | grep -i 'x-frame-options')
+xco=$(echo "$response" | grep -i 'x-content-type-options')
 
 # check for cookie security flags if desired
 insecure_cookies=""
 if $cookie_check; then
-    insecure_cookies=$(echo $response | grep 'Set-Cookie' | grep -Eiv '(; *Secure; *HttpOnly$|; *HttpOnly; *Secure$)')
+    
+    insecure_cookies=$(echo "$response" | grep -i 'Set-Cookie' | \
+        grep -Eiv '(;\s*secure;\s*httponly\s*$|;\s*httponly;\s*secure\s*$)')
 fi
 
 # print output
