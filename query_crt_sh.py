@@ -28,8 +28,8 @@ def main():
         date_valid = elems[2].get_text()
         date_invalid = elems[3].get_text()
         for br in elems[4].find('br'):
-            br.replace_with(";")
-        domains = elems[4].get_text().split(";")
+            br.replace_with("\n")
+        domains = elems[4].get_text().split("\n")
         print("%s, %s, %s, %s" % (date_logged, date_valid, date_invalid, domains))
 
 
