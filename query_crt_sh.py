@@ -21,7 +21,7 @@ def main():
     tables = soup.find_all('table')
     cert_table = tables[2]
     rows = cert_table.find_all('tr')
-    print("Date Logged, Date Valid, Date Invalid, Domains:")
+    print("Date Logged, Date Valid, Date Invalid, Domains, Issuer")
     for r in rows[1:]:
         elems = r.find_all('td')
         date_logged = elems[1].get_text()
@@ -30,7 +30,8 @@ def main():
         for br in elems[4].find('br'):
             br.replace_with("\n")
         domains = elems[4].get_text().split("\n")
-        print("%s, %s, %s, %s" % (date_logged, date_valid, date_invalid, domains))
+        issuer = elems[5].get_text()
+        print("%s, %s, %s, %s, %s" % (date_logged, date_valid, date_invalid, domains, issuer))
 
 
 if __name__ == "__main__":
