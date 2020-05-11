@@ -48,12 +48,12 @@ def parse_file_entry(entry, file_format):
     # smbmap example:
     # host:10.1.1.1, privs:READ_ONLY, isDir:f, name:dir1\dir2\file1234.txt, fileSize:1698, date:Tue Feb 14 19:43:46 2017
     # host:10.1.1.1, privs:READ_ONLY, isDir:d, name:dir1\dir2\dir3, fileSize:0, date:Tue Feb 14 19:43:46 2017
-    if format == "smbmap":
+    if file_format == "smbmap":
         fields = entry.split(", ")
         file_path_raw = fields[3]
         file_path = file_path_raw.split(":")[1]
         file_name = os.path.basename(file_path)
-    elif format is None:
+    elif file_format is None:
         file_name = entry
     
     return file_name
