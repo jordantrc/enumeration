@@ -34,8 +34,8 @@ FILENAME_KEYWORDS = [
     'credit',
     'debit',
     'vhd',
-    'vmdk',
-    'vhdx'
+    'vhdx',
+    'vmdk'
 ]
 
 SUPPORTED_FORMATS = [
@@ -48,13 +48,15 @@ def parse_file_entry(entry, file_format):
     # smbmap example:
     # host:10.1.1.1, privs:READ_ONLY, isDir:f, name:dir1\dir2\file1234.txt, fileSize:1698, date:Tue Feb 14 19:43:46 2017
     # host:10.1.1.1, privs:READ_ONLY, isDir:d, name:dir1\dir2\dir3, fileSize:0, date:Tue Feb 14 19:43:46 2017
-    if file_format == "smbmap":
+    if file_format == "smbmap" and "host:" in entry:
         fields = entry.split(", ")
         file_path_raw = fields[3]
         file_path = file_path_raw.split(":")[1]
         file_name = os.path.basename(file_path)
     elif file_format is None:
         file_name = entry
+    else:
+        file_name = None
     
     return file_name
 
@@ -64,13 +66,14 @@ def keyword_search(filename, fs_list, file_format=None):
     matching_files = []
     for i, f in enumerate(fs_list):
         file_name = parse_file_entry(f, file_format)
-        for k in FILENAME_KEYWORDS:
-            if k in file_name.lower():
-                extension = '(none)'
-                if "." in file_name:
-                    extension = file_name.split('.')[-1].lower()
-                matching_files.append([filename, i, file_name, extension])
-                break
+        if file_name is not None:
+            for k in FILENAME_KEYWORDS:
+                if k in file_name.lower():
+                    extension = '(none)'
+                    if "." in file_name:
+                        extension = file_name.split('.')[-1].lower()
+                    matching_files.append([filename, i, file_name, extension])
+                    break
 
     return matching_files
 
