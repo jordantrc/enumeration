@@ -32,7 +32,6 @@ usage() {
 #   None
 #######################################
 print_output() {
-    echo "#################################################"
     echo -e "$neu URL: $url"
     if [ "${#errors}" -gt 0 ]; then
         echo -e "$neg Errors encountered:"
@@ -81,8 +80,6 @@ print_output() {
             echo -e "$insecure_cookies"
         fi
     fi
-
-    echo "#################################################"
 }
 
 #######################################
