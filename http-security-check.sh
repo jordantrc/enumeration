@@ -203,9 +203,7 @@ else
 fi
 
 curl="/usr/bin/curl"
-command="$curl $certificate_option -sS --connect-timeout $timeout -k -I $url 2>&1"
-if $verbose; then echo -e "$neu curl command [$command]"; fi
-response=$($command)
+response=$($curl $certificate_option -sS --connect-timeout $timeout -k -I $url 2>&1)
 curl_exit_code="$?"
 
 # curl error handling
