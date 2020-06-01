@@ -152,7 +152,7 @@ while getopts "vs:nbkt:c:p:m:h:" o; do
             certificate_file=${OPTARG}
             ;;
         h)
-            headers+=(${OPTARG})
+            headers+=("${OPTARG}")
             ;;
         k)
             cookie_check=true
@@ -217,7 +217,7 @@ fi
 header_options=""
 for val in "${headers[@]}"
 do
-    $header_options+=" -H \"$val\""
+    header_options+=" -H \"$val\""
 done
 
 curl="/usr/bin/curl"
