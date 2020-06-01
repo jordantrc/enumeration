@@ -17,9 +17,6 @@ usage() {
     echo "                  cert requires it, a prompt will appear"
     echo "  -t <seconds>    set the timeout for curl, default is 5 seconds"
     echo "  -k              check all cookies for security flags (secure, httponly)"
-    echo "  -m <method>     use HTTP method (e.g. GET, POST, PUT, etc.)"
-    echo "  -h <header>     send the specified with the request. This option"
-    echo "                  can be specified multiple times."
 }
 
 #######################################
@@ -141,8 +138,6 @@ timeout="5"
 header="ALL"
 certificate_file=""
 certificate_password=""
-method="GET"
-headers=()
 while getopts "vs:nbkt:c:p:m:h:" o; do
     case "${o}" in
         b)
@@ -151,14 +146,8 @@ while getopts "vs:nbkt:c:p:m:h:" o; do
         c)
             certificate_file=${OPTARG}
             ;;
-        h)
-            headers+=("${OPTARG}")
-            ;;
         k)
             cookie_check=true
-            ;;
-        m)
-            method=${OPTARG}
             ;;
         n)
             no_color=true
@@ -213,15 +202,8 @@ else
     certificate_option=""
 fi
 
-# create header_options string
-header_options=""
-for val in "${headers[@]}"
-do
-    header_options+=" -H \"$val\""
-done
-
 curl="/usr/bin/curl"
-command="$curl $certificate_option -X $method $header_options -sS --connect-timeout $timeout -k -I $url 2>&1"
+command="$curl $certificate_option -sS --connect-timeout $timeout -k -I $url 2>&1"
 if $verbose; then echo -e "$neu curl command [$command]"; fi
 response=$($command)
 curl_exit_code="$?"
