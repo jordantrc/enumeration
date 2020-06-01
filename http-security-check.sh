@@ -5,10 +5,10 @@
 # See usage function for details regarding options and arguments.
 
 usage() {
-    echo "Usage: http-header-check.sh [OPTIONS] [https:]host[:port][/url]"
+    echo "Usage: http-header-check.sh [OPTIONS] [http://|https://]host[:port][/url]"
     echo "Valid Options:"
     echo "  -b              brief output, prints the test result in one line"
-    echo "  -s <header>     check for a single header"
+    echo "  -s <header>     check for a single security header in the response"
     echo "  -n              remove colorized output"
     echo "  -v              verbose output, print the whole HTTP protocol response" 
     echo "                  without the content"
@@ -17,6 +17,9 @@ usage() {
     echo "                  cert requires it, a prompt will appear"
     echo "  -t <seconds>    set the timeout for curl, default is 5 seconds"
     echo "  -k              check all cookies for security flags (secure, httponly)"
+    echo "  -m <method>     use HTTP method (e.g. GET, POST, PUT, etc.)"
+    echo "  -h <header>     send the specified with the request. This option"
+    echo "                  can be specified multiple times."
 }
 
 #######################################
@@ -138,7 +141,9 @@ timeout="5"
 header="ALL"
 certificate_file=""
 certificate_password=""
-while getopts "vs:nbkt:c:p:" o; do
+method="GET"
+headers=""
+while getopts "vs:nbkt:c:p:m:h:" o; do
     case "${o}" in
         b)
             brief_output=true
@@ -146,8 +151,14 @@ while getopts "vs:nbkt:c:p:" o; do
         c)
             certificate_file=${OPTARG}
             ;;
+        h)
+            headers+=("-H \"${OPTARG}\" ")
+            ;;
         k)
             cookie_check=true
+            ;;
+        m)
+            method=${OPTARG}
             ;;
         n)
             no_color=true
@@ -203,7 +214,9 @@ else
 fi
 
 curl="/usr/bin/curl"
-response=$($curl $certificate_option -sS --connect-timeout $timeout -k -I $url 2>&1)
+command="$curl $certificate_option -X $method $headers -sS --connect-timeout $timeout -k -I $url 2>&1"
+if $verbose; then echo -e "$neu curl command [$command]"; fi
+response=$($command)
 curl_exit_code="$?"
 
 # curl error handling
