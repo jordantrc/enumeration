@@ -17,6 +17,7 @@ usage() {
     echo "                  cert requires it, a prompt will appear"
     echo "  -t <seconds>    set the timeout for curl, default is 5 seconds"
     echo "  -k              check all cookies for security flags (secure, httponly)"
+    echo "  -L              follow redirects"
 }
 
 #######################################
@@ -130,12 +131,13 @@ fi
 brief_output=false
 no_color=false
 verbose=false
+follow_redirects=false
 cookie_check=false
 timeout="5"
 header="ALL"
 certificate_file=""
 certificate_password=""
-while getopts "vs:nbkt:c:p:m:h:" o; do
+while getopts "vs:nbkLt:c:p:" o; do
     case "${o}" in
         b)
             brief_output=true
@@ -145,6 +147,9 @@ while getopts "vs:nbkt:c:p:m:h:" o; do
             ;;
         k)
             cookie_check=true
+            ;;
+        L)
+            follow_redirects=true
             ;;
         n)
             no_color=true
@@ -199,8 +204,15 @@ else
     certificate_option=""
 fi
 
+# add -L parameter to curl if specified
+if $follow_redirects; then
+    redirect_option="-L"
+else
+    redirect_option=""
+fi
+
 curl="/usr/bin/curl"
-response=$($curl $certificate_option -sS --connect-timeout $timeout -k -I $url 2>&1)
+response=$($curl $certificate_option $redirect_option -sS --connect-timeout $timeout -k -I $url 2>&1)
 curl_exit_code="$?"
 
 # curl error handling
