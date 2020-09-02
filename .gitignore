@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+sample_files/sslscan.xml
+*.csv
 
 # C extensions
 *.so
