@@ -30,7 +30,7 @@ def minimum_tls_version(supported_protocols):
     return result
 
 
-def minimum_cipher_strength(supported_ciphers):
+def weakest_cipher(supported_ciphers):
     """Returns the minimum supported cipher strength"""
     # find lowest cipher bits supported
     lowest_cipher_bits = 4000000000  # suitably large number
@@ -50,7 +50,10 @@ def minimum_cipher_strength(supported_ciphers):
     
     result = None
     if highest_order_lowest_bit_cipher is not None:
-        result = "%s bit %s" % (highest_order_lowest_bit_cipher['bits'], highest_order_lowest_bit_cipher['cipher'])
+        result = [
+            "%s bit %s" % (highest_order_lowest_bit_cipher['bits'], highest_order_lowest_bit_cipher['cipher']),
+            highest_order_lowest_bit_cipher['strength']
+        ]
 
     return result
 
@@ -78,9 +81,11 @@ def main():
             'port': None,
             'minimum_tls_version': None,
             'heartbleed_vulnerable': None,
-            'minimum_cipher_strength': None,
+            'weakest_cipher': None,
+            'weakest_cipher_rating': None,
             'signature_algorithm': None,
             'public_key_entropy': None,
+            'certificate_subject': None,
             'certificate_inception': None,
             'certificate_expiration': None,
             'validity_days': None,
@@ -132,6 +137,8 @@ def main():
                     #print("\t\t%s" % f)
                     if f.tag == "signature-algorithm":
                         scan['signature_algorithm'] = f.text
+                    elif f.tag == "subject":
+                        scan['certificate_subject'] = f.text
                     elif f.tag == "pk":
                         scan['public_key_entropy'] = f.attrib['bits']
                     elif f.tag == "self-signed":
@@ -149,7 +156,10 @@ def main():
             
         # set minimum cipher and minimum tls
         scan['minimum_tls_version'] = minimum_tls_version(protocol_support)
-        scan['minimum_cipher_strength'] = minimum_cipher_strength(accepted_ciphers)
+        weakest_cipher_result = weakest_cipher(accepted_ciphers)
+        if weakest_cipher_result is not None:
+            scan['weakest_cipher'] = weakest_cipher_result[0]
+            scan['weakest_cipher_rating'] = weakest_cipher_result[1]
         all_scans.append(scan)
 
     # create csv file
