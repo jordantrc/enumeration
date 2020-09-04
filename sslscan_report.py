@@ -133,7 +133,7 @@ def main():
                 for f in cert_elements:
                     #print("\t\t%s" % f)
                     if f.tag == "signature-algorithm":
-                        signature_algo = f.text.split(":")[].strip()
+                        signature_algo = f.text.split(":")[1].strip()
                         signature_algo = signature_algo.replace('WithRSAEncryption', ' with RSA encryption')
                         scan['signature_algorithm'] = signature_algo
                     elif f.tag == "subject":
