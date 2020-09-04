@@ -51,7 +51,7 @@ def weakest_cipher(supported_ciphers):
     result = None
     if highest_order_lowest_bit_cipher is not None:
         result = [
-            "%s bit %s" % (highest_order_lowest_bit_cipher['bits'], highest_order_lowest_bit_cipher['cipher']),
+            "%s-bit %s" % (highest_order_lowest_bit_cipher['bits'], highest_order_lowest_bit_cipher['cipher']),
             highest_order_lowest_bit_cipher['strength']
         ]
 
@@ -76,18 +76,18 @@ def main():
     all_scans = []
     for r in results:
         scan = {
-            'host': None, 
-            'sniname': None, 
+            'host': None,  
             'port': None,
+            'certificate_expiration': None,
             'minimum_tls_version': None,
-            'heartbleed_vulnerable': None,
             'weakest_cipher': None,
-            'weakest_cipher_rating': None,
             'signature_algorithm': None,
-            'public_key_entropy': None,
+            'private_key_entropy': None,
+            'heartbleed_vulnerable': None,
+            'weakest_cipher_rating': None,
+            'sniname': None,
             'certificate_subject': None,
             'certificate_inception': None,
-            'certificate_expiration': None,
             'validity_days': None,
             'certificate_expired': None,
             'self_signed': None
@@ -136,11 +136,11 @@ def main():
                 for f in cert_elements:
                     #print("\t\t%s" % f)
                     if f.tag == "signature-algorithm":
-                        scan['signature_algorithm'] = f.text
+                        scan['signature_algorithm'] = f.text.replace('WithRSAEncryption', ' with RSA encryption')
                     elif f.tag == "subject":
                         scan['certificate_subject'] = f.text
                     elif f.tag == "pk":
-                        scan['public_key_entropy'] = f.attrib['bits']
+                        scan['private_key_entropy'] = f.attrib['bits']
                     elif f.tag == "self-signed":
                         scan['self_signed'] = f.text
                     elif f.tag == "not-valid-before":
