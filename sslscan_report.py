@@ -121,9 +121,11 @@ def main():
                     'sslversion': e.attrib['sslversion'],
                     'bits': e.attrib['bits'],
                     'cipher': e.attrib['cipher'],
-                    'strength': e.attrib['strength'],
+                    'strength': None,
                     'order': cipher_order 
                 }
+                if 'strength' in e.attrib.keys():
+                    cipher['strength'] = e.attrib['strength']
                 accepted_ciphers.append(cipher)
                 cipher_order += 1
             elif e.tag == 'certificates':
