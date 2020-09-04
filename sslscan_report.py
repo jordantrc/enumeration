@@ -128,17 +128,14 @@ def main():
                     cipher['strength'] = e.attrib['strength']
                 accepted_ciphers.append(cipher)
                 cipher_order += 1
-            elif e.tag == 'certificates':
-                cert = list(e)
-                #print("\t%s" % cert)
-                if len(cert) > 0:
-                    cert_elements = list(cert[0])
-                else:
-                    cert_elements = []
+            elif e.tag == 'certificate':
+                cert_elements = list(e)
                 for f in cert_elements:
                     #print("\t\t%s" % f)
                     if f.tag == "signature-algorithm":
-                        scan['signature_algorithm'] = f.text.replace('WithRSAEncryption', ' with RSA encryption')
+                        signature_algo = f.text.split(":")[].strip()
+                        signature_algo = signature_algo.replace('WithRSAEncryption', ' with RSA encryption')
+                        scan['signature_algorithm'] = signature_algo
                     elif f.tag == "subject":
                         scan['certificate_subject'] = f.text
                     elif f.tag == "pk":
