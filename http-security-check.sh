@@ -7,6 +7,7 @@
 usage() {
     echo "Usage: http-header-check.sh [OPTIONS] [http://|https://]host[:port][/url]"
     echo "Valid Options:"
+    echo "  -A              send a fake user agent string with the request"
     echo "  -b              brief output, prints the test result in one line"
     echo "  -s <header>     check for a single security header in the response"
     echo "  -n              remove colorized output"
@@ -128,6 +129,7 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
+agent_forgery=false
 brief_output=false
 no_color=false
 verbose=false
@@ -139,6 +141,9 @@ certificate_file=""
 certificate_password=""
 while getopts "vs:nbkLt:c:p:" o; do
     case "${o}" in
+        A)
+            agent_forgery=true
+            ;;
         b)
             brief_output=true
             ;;
@@ -211,8 +216,17 @@ else
     redirect_option=""
 fi
 
+# add fake agent if specified
+if $agent_forgery; then
+    agent_string="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36"
+    agent_option="-A $agent_string"
+else
+    agent_option=""
+fi
+
+
 curl="/usr/bin/curl"
-response=$($curl $certificate_option $redirect_option -sS --connect-timeout $timeout -k -I $url 2>&1)
+response=$($curl $certificate_option $redirect_option $agent_option -sS --connect-timeout $timeout -k -I $url 2>&1)
 curl_exit_code="$?"
 
 # curl error handling
